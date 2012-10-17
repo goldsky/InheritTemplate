@@ -1,0 +1,5 @@
+Changelog for Inherit Template.
+
+Inherit Template 1.0.0-beta1
+====================================
+- Initial release
