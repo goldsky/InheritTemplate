@@ -37,7 +37,7 @@ set_time_limit(0);
 define('PKG_NAME', 'Inherit Template');
 define('PKG_NAME_LOWER', 'inherittemplate');
 define('PKG_VERSION', '1.0.0');
-define('PKG_RELEASE', 'beta1');
+define('PKG_RELEASE', 'beta2');
 
 /* override with your own defines here (see build.config.sample.php) */
 require_once dirname(__FILE__) . '/build.config.php';
@@ -68,14 +68,12 @@ $builder->registerNamespace(PKG_NAME_LOWER, false, true, '{core_path}components/
 
 /* create category */
 $category = $modx->newObject('modCategory');
-$category->set('id', 0);
 $category->set('category', PKG_NAME);
 
 /* create the plugin object */
 $plugin = $modx->newObject('modPlugin');
-$plugin->set('id', 0);
 $plugin->set('name', PKG_NAME);
-$plugin->set('description', PKG_NAME . ' ' . PKG_VERSION . '-' . PKG_RELEASE . ' plugin for MODx Revolution');
+$plugin->set('description', 'Enable user to set automatic template selection when creating a new child document');
 $plugin->set('plugincode', file_get_contents($sources['source_core'] . '/elements/plugins/' . PKG_NAME_LOWER . '.plugin.php'));
 
 /* add plugin events */
@@ -93,7 +91,6 @@ $category->addMany($plugin);
 
 /* create the template variable object */
 $tv = $modx->newObject('modTemplateVar');
-$tv->set('id', 0);
 $tv->set('type', 'listbox');
 $tv->set('name', 'inheritTpl');
 $tv->set('caption', 'Children\'s Template');
@@ -102,38 +99,27 @@ $tv->set('elements', "@EVAL return include_once MODX_CORE_PATH . 'components/inh
 
 $category->addMany($tv);
 
+$modx->log(modX::LOG_LEVEL_INFO, 'Adding plugin and tv to category...');
+flush();
 $attributes = array(
     xPDOTransport::UNIQUE_KEY => 'category',
     xPDOTransport::PRESERVE_KEYS => false,
     xPDOTransport::UPDATE_OBJECT => true,
     xPDOTransport::RELATED_OBJECTS => true,
     xPDOTransport::RELATED_OBJECT_ATTRIBUTES => array(
-        'Children' => array(
-            'Plugins' => array(
-                xPDOTransport::PRESERVE_KEYS => true,
-                xPDOTransport::UPDATE_OBJECT => false,
-                xPDOTransport::UNIQUE_KEY => 'name',
-            ), 'PluginEvents' => array(
-                xPDOTransport::PRESERVE_KEYS => true,
-                xPDOTransport::UPDATE_OBJECT => false,
-                xPDOTransport::UNIQUE_KEY => array('pluginid', 'event'),
-            ), 'TemplateVar' => array(
-                xPDOTransport::PRESERVE_KEYS => true,
-                xPDOTransport::UPDATE_OBJECT => false,
-                xPDOTransport::UNIQUE_KEY => 'name',
-            )
-        ),
         'Plugins' => array(
-            xPDOTransport::PRESERVE_KEYS => true,
-            xPDOTransport::UPDATE_OBJECT => false,
+            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::UPDATE_OBJECT => true,
             xPDOTransport::UNIQUE_KEY => 'name',
-        ), 'PluginEvents' => array(
+        ),
+        'PluginEvents' => array(
             xPDOTransport::PRESERVE_KEYS => true,
             xPDOTransport::UPDATE_OBJECT => false,
-            xPDOTransport::UNIQUE_KEY => array('pluginid', 'event'),
-        ), 'TemplateVar' => array(
-            xPDOTransport::PRESERVE_KEYS => true,
-            xPDOTransport::UPDATE_OBJECT => false,
+            xPDOTransport::UNIQUE_KEY => array('pluginid','event'),
+        ),
+        'TemplateVar' => array(
+            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::UPDATE_OBJECT => true,
             xPDOTransport::UNIQUE_KEY => 'name',
         ),
     ),

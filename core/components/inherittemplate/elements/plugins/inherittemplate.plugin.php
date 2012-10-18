@@ -28,61 +28,40 @@
  * @package     Inherit Template
  * @subpackage  plugin
  */
+// this plugin only apply to the new document
+if (empty($scriptProperties['mode']) || $scriptProperties['mode'] !== 'new') {
+    return;
+}
 if ($modx->event->name === 'OnDocFormRender') {
-    // this plugin only apply to the new document
-    if (empty($scriptProperties['mode']) || $scriptProperties['mode'] !== 'new') {
+    // get the parent's ID
+    $parentObj = $modx->getObject('modResource', $_REQUEST['parent']);
+    if (!$parentObj) {
+        return;
+    }
+    $parent = $parentObj->toArray();
+
+    // checking the parent's TV
+    $inheritTplObj = $modx->getObject('modTemplateVar', array(
+        'name' => $modx->getOption('inheritTpl.tvname')
+            ));
+
+    if (!$inheritTplObj || !$inheritTplObj->hasTemplate($parent['template'])) {
         return;
     }
 
-    $content = array();
-    $content = array_merge($_REQUEST, $scriptProperties);
-
-    // get the parent's ID
-    $parentObj = $modx->getObject('modResource', array(
-        'id' => $content['parent']
+    // get the value from the parent's TV
+    $inheritTpl = $inheritTplObj->toArray();
+    $tvValueObj = $modx->getObject('modTemplateVarResource', array(
+        'tmplvarid' => $inheritTpl['id'],
+        'contentid' => $parent['id']
             ));
-    if (!$parentObj) {
-//        return;
-        // get the sibling's ID
-        $siblingsObj = $modx->getObject('modResource', array(
-            'parent' => $content['parent']
-                ));
-    } else {
-        $parent = array();
-        $parent = $parentObj->toArray();
-
-        // checking the parent's TV
-        $inheritTplObj = $modx->getObject('modTemplateVar', array(
-            'name' => $modx->getOption('inheritTpl.tvname')
-                ));
-
-        if (!$inheritTplObj || !$inheritTplObj->hasTemplate($parent['template'])) {
-            return;
-        }
-
-        // get the value from the parent's TV
-        $inheritTpl = array();
-        $inheritTpl = $inheritTplObj->toArray();
-        $tvValueObj = $modx->getObject('modTemplateVarResource', array(
-            'tmplvarid' => $inheritTpl['id'],
-            'contentid' => $parent['id']
-                ));
-        if (!$tvValueObj) {
-            return;
-        }
-        $tvValueArray = array();
-        $tvValueArray = $tvValueObj->toArray();
+    if (!$tvValueObj) {
+        return;
     }
+    $tvValueArray = $tvValueObj->toArray();
+
     // force/override the template to the opening document
-//    $_REQUEST['template'] = $tvValueArray['value'];
-//    $modx->addHtml('
-//        <script type="text/javascript">
-//        // <![CDATA[
-//        Ext.onReady(function() {
-//            MODx.load({record: "template":' . $tvValueArray['value'] . '});
-//        });
-//        // ]]>
-//        </script>');
+    $modx->controller->setProperty('template', $tvValueArray['value']);
 
     return;
 }

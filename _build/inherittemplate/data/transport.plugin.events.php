@@ -31,13 +31,12 @@
 $events = array();
 
 $evs = array(
-    'OnDocFormRender',
+    'OnDocFormRender'
 );
-
 foreach ($evs as $ev) {
-    $events[(string)$ev] = $modx->newObject('modPluginEvent');
-    $events[(string)$ev]->fromArray(array(
-        'event' => (string)$ev,
+    $events['OnDocFormRender'] = $modx->newObject('modPluginEvent');
+    $events['OnDocFormRender']->fromArray(array(
+        'event' => 'OnDocFormRender',
         'priority' => 0,
         'propertyset' => 0,
     ),'',true,true);
